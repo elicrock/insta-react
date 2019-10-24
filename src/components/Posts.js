@@ -1,12 +1,71 @@
 import React, {Component} from 'react';
-import Post from './Post';
+import InstaService from '../services/instaService';
+import User from './User';
+import ErrorMessage from './Error';
 
 export default class Posts extends Component {
+  InstaService = new InstaService();
+  state = {
+    posts: [],
+    error: false
+  }
+
+  componentDidMount() {
+    this.updatePosts();
+  }
+
+  updatePosts() {
+    this.InstaService.getAllPosts()
+    .then(this.onPostsLoaded)
+    .catch(this.onError);
+  }
+
+  onPostsLoaded = (posts) => {
+    this.setState({
+      posts,
+      error: false
+    })
+  }
+
+  onError = () => {
+    this.setState({
+      error: true
+    })
+  }
+
+  renderItems(arr) {
+    return arr.map(item => {
+      const {name, altname, photo, src, alt, descr, id} = item;
+
+      return(
+        <div key={id} className="post">
+          <User 
+            src={photo}
+            alt={altname}
+            name={name}
+            min />
+          <img src={src} alt={alt}></img>
+          <div className="post__name">
+            {name}
+          </div>
+          <div className="post__descr">
+            {descr}
+          </div>
+        </div>
+      )
+    });
+  }
+
   render() {
+    const {error, posts} = this.state;
+    if (error) {
+      return <ErrorMessage/>
+    }
+
+    const items = this.renderItems(posts);
     return (
       <div className="left">
-        <Post src="https://avante.biz/wp-content/uploads/Waterfall-HD-Wallpapers/Waterfall-HD-Wallpapers-037.jpg" alt="nature" />
-        <Post src="https://www.nastol.com.ua/pic/201502/2560x1600/nastol.com.ua-128293.jpg" alt="flowers" />
+        {items}
       </div>
     )
   }
